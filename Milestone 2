@@ -1,0 +1,769 @@
+!pip install -q streamlit
+# installing important libraries
+!pip install streamlit pyjwt bcrypt python-dotenv pyngrok nltk streamlit-option-menu plotly textstat PyPDF2 -q
+
+
+%%writefile app.py
+import streamlit as st
+import sqlite3
+import hashlib
+import smtplib
+from email.mime.text import MIMEText
+import random
+import string
+import time
+import re
+import textstat
+import PyPDF2
+import plotly.graph_objects as go
+
+# ==========================================
+# CONFIGURATION
+# ==========================================
+# Fill in credentials to send real emails
+SMTP_SERVER = "smtp.gmail.com"
+SMTP_PORT = 587
+SENDER_EMAIL = ""
+SENDER_PASSWORD = "" # Use an App Password, not your real password
+
+SECURITY_QUESTIONS = [
+    "What is your mother's maiden name?",
+    "What was the name of your first pet?",
+    "What city were you born in?",
+    "What is your favorite book?",
+    "What was your childhood nickname?"
+]
+
+# ==========================================
+# UI STYLING
+# ==========================================
+def apply_custom_styles():
+    st.markdown("""
+    <style>
+    /* Main application background - clean light gray/blue */
+    .stApp {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    }
+
+    /* Center align headers with Deep Royal Blue */
+    h1 {
+        text-align: center;
+        color: #1E3A8A !important;
+        font-weight: 800;
+        padding-bottom: 10px;
+    }
+
+    /* Style form containers - Professional Card Look */
+    div[data-testid="stForm"] {
+        border-radius: 12px;
+        padding: 30px;
+        background-color: #ffffff;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        border: 1px solid #e2e8f0;
+        border-top: 5px solid #1E3A8A; /* Deep Royal Blue accent */
+    }
+
+    /* Input focus borders - Deep Royal Blue */
+    div[data-baseweb="input"]:focus-within, div[data-baseweb="select"]:focus-within, div[data-baseweb="textarea"]:focus-within {
+        border-color: #1E3A8A !important;
+        box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.2) !important;
+    }
+
+    /* Primary vibrant button styling */
+    .stButton>button[data-testid="baseButton-primary"] {
+        width: 100%;
+        border-radius: 8px;
+        font-weight: bold;
+        background-color: #1E3A8A;
+        color: white;
+        border: none;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 6px rgba(30, 58, 138, 0.2);
+    }
+    .stButton>button[data-testid="baseButton-primary"]:hover {
+        transform: translateY(-2px);
+        background-color: #152b69; /* Darker blue for hover effect */
+        box-shadow: 0 6px 12px rgba(30, 58, 138, 0.3);
+        color: white;
+    }
+
+    /* Secondary button styling */
+    .stButton>button[data-testid="baseButton-secondary"] {
+        width: 100%;
+        border-radius: 8px;
+        font-weight: bold;
+        background-color: white;
+        color: #E11D48;
+        border: 1px solid #E11D48;
+        transition: all 0.2s ease;
+    }
+    .stButton>button[data-testid="baseButton-secondary"]:hover {
+        background-color: #fff1f2;
+        color: #BE123C;
+        border-color: #BE123C;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(225, 29, 72, 0.2);
+    }
+
+    /* Subheaders and text styling inside the form */
+    div[data-testid="stForm"] h3, div[data-testid="stForm"] p {
+        color: #334155;
+    }
+
+    /* Interactive Metric Cards Styling */
+    div[data-testid="metric-container"] {
+        background-color: white;
+        border: 1px solid #e2e8f0;
+        padding: 15px;
+        border-radius: 12px;
+        border-left: 5px solid #1E3A8A;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        transition: all 0.3s ease; /* Smooth transition for hover */
+    }
+
+    /* Hover effect for metrics */
+    div[data-testid="metric-container"]:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        border-left: 5px solid #E11D48; /* Highlight accent on hover */
+    }
+
+    /* ==========================================
+       SIDEBAR / NAVBAR STYLING
+       ========================================== */
+    section[data-testid="stSidebar"] {
+        background-color: #f9f9f9;
+        border-right: 1px solid #e5e5e5;
+    }
+
+    /* Style sidebar buttons to look like clean menu links */
+    section[data-testid="stSidebar"] .stButton button {
+        background-color: transparent !important;
+        color: #333333 !important;
+        border: none !important;
+        box-shadow: none !important;
+        justify-content: flex-start !important;
+        padding: 0.6rem 0.8rem !important;
+        font-weight: 500 !important;
+        border-radius: 8px !important;
+        width: 100% !important;
+        transition: all 0.2s ease;
+    }
+    section[data-testid="stSidebar"] .stButton button p {
+        font-size: 15px !important;
+        margin: 0 !important;
+    }
+    section[data-testid="stSidebar"] .stButton button:hover {
+        background-color: #ececec !important;
+        transform: translateX(4px); /* Slight nudge effect */
+    }
+
+    /* Bottom User Profile Section */
+    .user-profile-container {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        margin-top: 10px;
+        border-top: 1px solid #e5e5e5;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    .user-profile-container:hover {
+        background-color: #ececec;
+        cursor: pointer;
+    }
+    .user-avatar {
+        background-color: #E11D48;
+        color: white;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 12px;
+        font-weight: bold;
+        font-size: 15px;
+        flex-shrink: 0;
+        box-shadow: 0 2px 4px rgba(225, 29, 72, 0.4);
+    }
+    .user-name {
+        font-weight: 600;
+        font-size: 14px;
+        color: #1E3A8A;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+# ==========================================
+# READABILITY UTILITIES (Advanced)
+# ==========================================
+class ReadabilityAnalyzer:
+    def __init__(self, text):
+        self.text = text
+        self.num_sentences = textstat.sentence_count(text)
+        self.num_words = textstat.lexicon_count(text, removepunct=True)
+        self.num_syllables = textstat.syllable_count(text)
+        self.complex_words = textstat.difficult_words(text)
+        self.char_count = textstat.char_count(text)
+
+    def get_all_metrics(self):
+        return {
+            "Flesch Reading Ease": textstat.flesch_reading_ease(self.text),
+            "Flesch-Kincaid Grade": textstat.flesch_kincaid_grade(self.text),
+            "SMOG Index": textstat.smog_index(self.text),
+            "Gunning Fog": textstat.gunning_fog(self.text),
+            "Coleman-Liau": textstat.coleman_liau_index(self.text)
+        }
+
+def create_gauge(value, title, min_val=0, max_val=100, color="#1E3A8A"):
+    # Made gauge smaller, adjusted font sizes and margins for a cleaner look
+    fig = go.Figure(go.Indicator(
+        mode = "gauge+number",
+        value = value,
+        title = {'text': title, 'font': {'color': "#334155", 'size': 13}},
+        number = {'font': {'color': color, 'size': 20, 'family': "Inter, sans-serif"}},
+        gauge = {
+            'axis': {'range': [min_val, max_val], 'tickwidth': 1, 'tickcolor': "#cbd5e1"},
+            'bar': {'color': color, 'thickness': 0.8},
+            'bgcolor': "#f8fafc",
+            'borderwidth': 1,
+            'bordercolor': "#e2e8f0",
+            'steps': [
+                {'range': [min_val, max_val], 'color': "#ffffff"}
+            ],
+        }
+    ))
+    fig.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        font={'family': "Inter, sans-serif"},
+        height=140, # Reduced height
+        margin=dict(l=10, r=10, t=25, b=10) # Tighter margins
+    )
+    return fig
+
+# ==========================================
+# DATABASE INIT & UTILITIES
+# ==========================================
+def init_db():
+    conn = sqlite3.connect('users.db')
+    c = conn.cursor()
+    # Create base table
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            email TEXT PRIMARY KEY,
+            password TEXT
+        )
+    ''')
+    # Single security question
+    try:
+        c.execute('ALTER TABLE users ADD COLUMN sec_q1 TEXT')
+        c.execute('ALTER TABLE users ADD COLUMN sec_a1 TEXT')
+    except sqlite3.OperationalError:
+        pass # Columns already exist
+
+    # Add username column
+    try:
+        c.execute('ALTER TABLE users ADD COLUMN username TEXT')
+    except sqlite3.OperationalError:
+        pass # Column already exists
+
+    conn.commit()
+    conn.close()
+
+def make_hash(password):
+    return hashlib.sha256(str.encode(password)).hexdigest()
+
+def check_hash(password, hashed):
+    return make_hash(password) == hashed
+
+def generate_otp():
+    return ''.join(random.choices(string.digits, k=6))
+
+def update_password(email, new_password):
+    hashed_pw = make_hash(new_password)
+    conn = sqlite3.connect('users.db')
+    c = conn.cursor()
+    c.execute('UPDATE users SET password=? WHERE email=?', (hashed_pw, email))
+    conn.commit()
+    conn.close()
+
+def send_email(to_email, subject, body):
+    try:
+        msg = MIMEText(body)
+        msg['Subject'] = subject
+        msg['From'] = SENDER_EMAIL
+        msg['To'] = to_email
+
+        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        server.starttls()
+        server.login(SENDER_EMAIL, SENDER_PASSWORD)
+        server.send_message(msg)
+        server.quit()
+        return True
+    except Exception as e:
+        st.error(f"Failed to send email: {e}")
+        return False
+
+# ==========================================
+# SESSION STATE NAVIGATION
+# ==========================================
+def go_to(page):
+    st.session_state.page = page
+    st.rerun()
+
+def switch_tab(tab_name):
+    st.session_state.active_tab = tab_name
+    st.rerun()
+
+# ==========================================
+# AUTH VIEWS
+# ==========================================
+def login_view():
+    st.markdown("<h1>卐 TextMorph</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #555;'>Sign in to continue</p>", unsafe_allow_html=True)
+
+    # Show success message if user just created an account
+    if st.session_state.get('just_signed_up'):
+        st.success("🎉 Account created successfully! Please log in.")
+        st.session_state.just_signed_up = False # Reset state
+
+    with st.form("login_form"):
+        email = st.text_input("Email", placeholder="Enter your email")
+        password = st.text_input("Password", type="password", placeholder="Enter your password")
+        submitted = st.form_submit_button("Login", type="primary")
+
+        if submitted:
+            conn = sqlite3.connect('users.db')
+            c = conn.cursor()
+            c.execute('SELECT password, username FROM users WHERE email=?', (email,))
+            result = c.fetchone()
+            conn.close()
+
+            if result and check_hash(password, result[0]):
+                st.session_state.logged_in = True
+                st.session_state.current_user = email
+                st.session_state.username = result[1] if result[1] else email.split('@')[0]
+                st.success("Logged in successfully!")
+                go_to('main')
+            else:
+                st.error("Invalid email or password.")
+
+    st.write("---")
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("✨ Create Account", type="secondary"):
+            go_to('signup')
+    with col2:
+        if st.button("🔑 Forgot Password?", type="secondary"):
+            go_to('forgot_password')
+
+
+def signup_view():
+    st.markdown("<h1>📝 Create Account</h1>", unsafe_allow_html=True)
+
+    with st.form("signup_form"):
+        st.subheader("Account Details")
+        username = st.text_input("Username", placeholder="Choose a username")
+        email = st.text_input("Email", placeholder="e.g., yourname@gmail.com")
+        password = st.text_input("Password", type="password", placeholder="Min. 8 chars, 1 number, 1 special char")
+        confirm_password = st.text_input("Confirm Password", type="password")
+
+        st.markdown("---")
+        st.subheader("Security Setup")
+        st.caption("This question will be used if you ever forget your password.")
+
+        q1 = st.selectbox("Select a Security Question", SECURITY_QUESTIONS)
+        a1 = st.text_input("Your Answer", type="password", placeholder="Your answer...")
+
+        submitted = st.form_submit_button("Sign Up", type="primary")
+
+        if submitted:
+            if not username.strip():
+                st.error("Please provide a username.")
+                return
+
+            # Email Validation - must end with @gmail.com
+            if not email.lower().endswith("@gmail.com"):
+                st.error("⚠️ Please enter a valid @gmail.com email address.")
+                return
+
+            if password != confirm_password:
+                st.error("Passwords do not match.")
+                return
+
+            # Password validation - length, numbers, and special characters
+            if len(password) < 8 or not re.search(r"\d", password) or not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
+                st.error("⚠️ Password must be at least 8 characters long, and include at least one number and one special character.")
+                return
+
+            if not a1.strip():
+                st.error("Please provide an answer to the security question.")
+                return
+
+            conn = sqlite3.connect('users.db')
+            c = conn.cursor()
+            c.execute('SELECT email FROM users WHERE email=?', (email,))
+            if c.fetchone():
+                st.error("Email already registered.")
+                conn.close()
+                return
+            conn.close()
+
+            # Send OTP
+            otp = generate_otp()
+            if send_email(email, "Verify your account", f"Your verification code is: {otp}"):
+                st.session_state.pending_user = {
+                    'username': username.strip(),
+                    'email': email,
+                    'password': password,
+                    'otp': otp,
+                    'q1': q1,
+                    'a1': a1.strip().lower()
+                }
+                st.success("Verification email sent!")
+                go_to('verify_signup')
+
+    if st.button("⬅️ Back to Login", type="secondary"):
+        go_to('login')
+
+
+def verify_signup_view():
+    st.markdown("<h1>✅ Verify Account</h1>", unsafe_allow_html=True)
+    st.write(f"Enter the 6-digit code sent to **{st.session_state.pending_user['email']}**")
+
+    with st.form("verify_signup_form"):
+        otp_input = st.text_input("OTP Code", placeholder="XXXXXX")
+        submitted = st.form_submit_button("Verify & Create Account", type="primary")
+
+        if submitted:
+            if otp_input == st.session_state.pending_user['otp']:
+                p_user = st.session_state.pending_user
+                password_hash = make_hash(p_user['password'])
+
+                conn = sqlite3.connect('users.db')
+                c = conn.cursor()
+                # Insert ignoring q2/a2 to simplify DB ops
+                c.execute('''
+                    INSERT INTO users (email, password, sec_q1, sec_a1, username)
+                    VALUES (?, ?, ?, ?, ?)
+                ''', (p_user['email'], password_hash, p_user['q1'], p_user['a1'], p_user['username']))
+                conn.commit()
+                conn.close()
+
+                st.session_state.pending_user = None
+                st.session_state.just_signed_up = True # Mark success flag to show on login page
+                go_to('login')
+            else:
+                st.error("Invalid OTP.")
+
+    if st.button("❌ Cancel", type="secondary"):
+        st.session_state.pending_user = None
+        go_to('signup')
+
+
+def forgot_password_view():
+    st.markdown("<h1>🔓 Forgot Password</h1>", unsafe_allow_html=True)
+
+    if 'forgot_step' not in st.session_state:
+        st.session_state.forgot_step = 1
+
+    if st.session_state.forgot_step == 1:
+        st.write("Enter your registered email to find your account.")
+        with st.form("forgot_password_form_1"):
+            email = st.text_input("Registered Email")
+            submitted = st.form_submit_button("Next", type="primary")
+
+            if submitted:
+                conn = sqlite3.connect('users.db')
+                c = conn.cursor()
+                c.execute('SELECT sec_q1, sec_a1, password FROM users WHERE email=?', (email,))
+                result = c.fetchone()
+                conn.close()
+
+                if not result:
+                    st.error("Email not found in our database.")
+                    return
+
+                st.session_state.forgot_data = {
+                    'email': email,
+                    'q1': result[0] if result[0] else None,
+                    'a1': result[1] if result[1] else None,
+                    'old_password_hash': result[2]
+                }
+                st.session_state.forgot_step = 2
+                st.rerun()
+
+    elif st.session_state.forgot_step == 2:
+        st.info("Choose a method to reset your password.")
+
+        # index=None forces the user to actively make a choice
+        method = st.radio("Verification Method:", ["Security Question", "Email OTP"], horizontal=True, index=None)
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        if method == "Security Question":
+            if not st.session_state.forgot_data.get('q1'):
+                st.warning("No security question is set for this account. Please use Email OTP.")
+            else:
+                with st.form("forgot_sq_form"):
+                    st.write(f"**Security Question:** {st.session_state.forgot_data['q1']}")
+                    ans = st.text_input("Your Answer", type="password")
+                    new_pw = st.text_input("New Password", type="password")
+                    conf_pw = st.text_input("Confirm New Password", type="password")
+
+                    if st.form_submit_button("Verify & Reset Password", type="primary"):
+                        if new_pw != conf_pw:
+                            st.error("Passwords do not match!")
+                        elif len(new_pw) < 8 or not re.search(r"\d", new_pw) or not re.search(r"[!@#$%^&*(),.?\":{}|<>]", new_pw):
+                            st.error("⚠️ Password must be at least 8 characters long, and include at least one number and one special character.")
+                        elif make_hash(new_pw) == st.session_state.forgot_data['old_password_hash']:
+                            st.error("You cannot use your old password. Please choose a new one.")
+                        elif ans.strip().lower() != st.session_state.forgot_data['a1']:
+                            st.error("Incorrect answer to security question!")
+                        else:
+                            update_password(st.session_state.forgot_data['email'], new_pw)
+                            st.session_state.forgot_step = 1
+                            st.session_state.forgot_data = None
+                            st.success("Password reset successfully! Please log in.")
+                            go_to('login')
+
+        elif method == "Email OTP":
+            if st.button("📧 Send Reset OTP to My Email", type="secondary"):
+                otp = generate_otp()
+                email = st.session_state.forgot_data['email']
+                if send_email(email, "Password Reset Code", f"Your password reset code is: {otp}"):
+                    st.session_state.forgot_data['otp'] = otp
+                    st.success("An OTP has been sent to your email address!")
+
+            if st.session_state.forgot_data.get('otp'):
+                with st.form("forgot_otp_form"):
+                    otp_val = st.text_input("Enter 6-digit OTP")
+                    new_pw = st.text_input("New Password", type="password")
+                    conf_pw = st.text_input("Confirm New Password", type="password")
+
+                    if st.form_submit_button("Verify & Reset Password", type="primary"):
+                        if new_pw != conf_pw:
+                            st.error("Passwords do not match!")
+                        elif len(new_pw) < 8 or not re.search(r"\d", new_pw) or not re.search(r"[!@#$%^&*(),.?\":{}|<>]", new_pw):
+                            st.error("⚠️ Password must be at least 8 characters long, and include at least one number and one special character.")
+                        elif make_hash(new_pw) == st.session_state.forgot_data['old_password_hash']:
+                            st.error("You cannot use your old password. Please choose a new one.")
+                        elif otp_val != st.session_state.forgot_data['otp']:
+                            st.error("Invalid OTP!")
+                        else:
+                            update_password(st.session_state.forgot_data['email'], new_pw)
+                            st.session_state.forgot_step = 1
+                            st.session_state.forgot_data = None
+                            st.success("Password reset successfully! Please log in.")
+                            go_to('login')
+
+    if st.button("⬅️ Back to Login", type="secondary"):
+        st.session_state.forgot_step = 1
+        if 'forgot_data' in st.session_state:
+            del st.session_state.forgot_data
+        go_to('login')
+
+
+# ==========================================
+# DASHBOARD (LOGGED IN)
+# ==========================================
+def dashboard_view():
+    st.markdown("<h1>卐 TextMorph</h1>", unsafe_allow_html=True)
+    st.write(f"Welcome, **{st.session_state.username}**! Analyze, summarize, and paraphrase your text using advanced readability metrics.")
+    st.markdown("---")
+
+    # Input Method: Text or File
+    tab1, tab2 = st.tabs(["✍️ Input Text", "📂 Upload File (TXT/PDF)"])
+    text_input = ""
+
+    with tab1:
+        raw_text = st.text_area("Paste your text here to view readability metrics:", height=200, placeholder="Enter text to analyze (min 50 chars)...")
+        if raw_text: text_input = raw_text
+
+    with tab2:
+        uploaded_file = st.file_uploader("Upload a file to analyze", type=["txt", "pdf"])
+        if uploaded_file:
+            try:
+                if uploaded_file.type == "application/pdf":
+                    reader = PyPDF2.PdfReader(uploaded_file)
+                    text = ""
+                    for page in reader.pages:
+                        text += page.extract_text() + "\n"
+                    text_input = text
+                    st.info(f"✅ Loaded {len(reader.pages)} pages from PDF.")
+                else:
+                    text_input = uploaded_file.read().decode("utf-8")
+                    st.info(f"✅ Loaded TXT file: {uploaded_file.name}")
+            except Exception as e:
+                st.error(f"Error reading file: {e}")
+
+    # Display action buttons
+    st.markdown("<br>", unsafe_allow_html=True)
+    action_col1, action_col2 = st.columns(2)
+    with action_col1:
+        summarize_btn = st.button("✂️ Summarize Text", type="primary")
+    with action_col2:
+        paraphrase_btn = st.button("🔄 Paraphrase Text", type="primary")
+
+    if summarize_btn and text_input:
+        with st.spinner("Generating summary..."):
+            time.sleep(1)
+            st.success("**Summary:** " + text_input[:100] + "... (Connect to an LLM API to enable full summarization)")
+
+    if paraphrase_btn and text_input:
+        with st.spinner("Paraphrasing..."):
+            time.sleep(1)
+            st.success("**Paraphrased:** " + text_input[::-1][:100] + "... (Connect to an LLM API to enable full paraphrasing)")
+
+    st.markdown("---")
+    st.subheader("📊 Advanced Readability Metrics")
+
+    if text_input:
+        if len(text_input) < 50:
+            st.warning("Text is too short (min 50 chars). Please enter more text for an accurate analysis.")
+        else:
+            with st.spinner("Calculating advanced metrics..."):
+                analyzer = ReadabilityAnalyzer(text_input)
+                score = analyzer.get_all_metrics()
+
+            # 1. Overall Grade (Average)
+            avg_grade = (score['Flesch-Kincaid Grade'] + score['Gunning Fog'] + score['SMOG Index'] + score['Coleman-Liau']) / 4
+
+            # Determine Level
+            if avg_grade <= 6: level, color = "Beginner (Elementary)", "#28a745"
+            elif avg_grade <= 10: level, color = "Intermediate (Middle School)", "#17a2b8"
+            elif avg_grade <= 14: level, color = "Advanced (High School/College)", "#ffc107"
+            else: level, color = "Expert (Professional/Academic)", "#dc3545"
+
+            st.markdown(f"""
+            <div style="background-color: #ffffff; padding: 25px; border-radius: 12px; border-left: 6px solid {color}; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)';" onmouseout="this.style.transform='translateY(0)';">
+                <h2 style="margin:0; color: {color} !important; font-weight: 700;">Overall Level: {level}</h2>
+                <p style="margin:8px 0 0 0; color: #64748b; font-size: 16px; font-weight: 500;">Approximate Grade Level: {int(avg_grade)}</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # 2. Text Stats with Descriptive Emojis
+            st.markdown("#### 📝 Text Statistics")
+            s1, s2, s3, s4, s5 = st.columns(5)
+            s1.metric("📝 Sentences", analyzer.num_sentences)
+            s2.metric("🔤 Words", analyzer.num_words)
+            s3.metric("🗣️ Syllables", analyzer.num_syllables)
+            s4.metric("🧠 Complex Words", analyzer.complex_words)
+            s5.metric("🔡 Characters", analyzer.char_count)
+
+            st.markdown("<br>", unsafe_allow_html=True)
+
+            # 3. Visual Gauges (Smaller and refined)
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                st.plotly_chart(create_gauge(score["Flesch Reading Ease"], "Flesch Reading Ease", 0, 100, "#1E3A8A"), use_container_width=True)
+                with st.expander("ℹ️ About Flesch Ease"):
+                    st.caption("0-100 Scale. Higher is easier. 60-70 is standard.")
+
+            with c2:
+                st.plotly_chart(create_gauge(score["Flesch-Kincaid Grade"], "Flesch-Kincaid Grade", 0, 20, "#E11D48"), use_container_width=True)
+                with st.expander("ℹ️ About Kincaid Grade"):
+                    st.caption("US Grade Level. 8.0 means 8th grader can understand.")
+
+            with c3:
+                st.plotly_chart(create_gauge(score["SMOG Index"], "SMOG Index", 0, 20, "#059669"), use_container_width=True)
+                with st.expander("ℹ️ About SMOG"):
+                    st.caption("Commonly used for medical writing. Based on polysyllables.")
+
+            c4, c5 = st.columns(2)
+            with c4:
+                st.plotly_chart(create_gauge(score["Gunning Fog"], "Gunning Fog", 0, 20, "#D97706"), use_container_width=True)
+                with st.expander("ℹ️ About Gunning Fog"):
+                    st.caption("Based on sentence length and complex words.")
+
+            with c5:
+                st.plotly_chart(create_gauge(score["Coleman-Liau"], "Coleman-Liau", 0, 20, "#7C3AED"), use_container_width=True)
+                with st.expander("ℹ️ About Coleman-Liau"):
+                    st.caption("Based on characters instead of syllables. Good for automated analysis.")
+    else:
+        st.info("Start typing or upload a file above to see advanced readability metrics and text analysis.")
+
+
+def main_app_layout():
+    if 'active_tab' not in st.session_state:
+        st.session_state.active_tab = 'Dashboard'
+
+    # ==========================================
+    # CUSTOM SIDEBAR (Minimalist)
+    # ==========================================
+    with st.sidebar:
+        # Logo & Title
+        st.markdown("<h2 style='font-weight: 700; color: #1E3A8A; margin-top: 0;'><span style='font-size: 1.2em;'>卐</span> TextMorph</h2>", unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # Primary Navigation Link
+        if st.button("📖 Readability Dashboard", use_container_width=True):
+            switch_tab("Dashboard")
+
+        # Spacer to push profile and logout to the bottom
+        st.markdown("<div style='height: 50vh;'></div>", unsafe_allow_html=True)
+
+        # Bottom User Profile Profile Block
+        user_initial = st.session_state.username[0].upper() if st.session_state.username else "U"
+        username_display = st.session_state.username if st.session_state.username else "User"
+
+        st.markdown(f"""
+            <div class="user-profile-container">
+                <div class="user-avatar">{user_initial}</div>
+                <div class="user-name">{username_display}</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+        # Logout button right under profile
+        if st.button("🚪 Logout", use_container_width=True):
+            st.session_state.logged_in = False
+            st.session_state.current_user = None
+            if 'settings_otp' in st.session_state:
+                del st.session_state.settings_otp
+            go_to('login')
+
+    # ==========================================
+    # MAIN CONTENT ROUTING
+    # ==========================================
+    if st.session_state.active_tab == "Dashboard":
+        dashboard_view()
+
+# ==========================================
+# MAIN ROUTING
+# ==========================================
+def main():
+    st.set_page_config(page_title="TextMorph App", page_icon="卐", layout="wide", initial_sidebar_state="expanded")
+    apply_custom_styles()
+    init_db()
+
+    # Initialize session state variables
+    if 'page' not in st.session_state:
+        st.session_state.page = 'login'
+    if 'logged_in' not in st.session_state:
+        st.session_state.logged_in = False
+    if 'current_user' not in st.session_state:
+        st.session_state.current_user = None
+    if 'username' not in st.session_state:
+        st.session_state.username = None
+
+    # Router
+    if st.session_state.logged_in:
+        main_app_layout()
+    else:
+        # Constrain auth forms to center
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            if st.session_state.page == 'login':
+                login_view()
+            elif st.session_state.page == 'signup':
+                signup_view()
+            elif st.session_state.page == 'verify_signup':
+                verify_signup_view()
+            elif st.session_state.page == 'forgot_password':
+                forgot_password_view()
+
+if __name__ == "__main__":
+    main()
