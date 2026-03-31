@@ -303,4 +303,4 @@ User Dashboard
 
 f7
 Admin Dashboard
-<img width="1914" height="912" alt="image" src="https://github.com/user-attachments/assets/3c62dcb4-956d-43b3-aa14-923c9bf732b4" 
+<img width="1914" height="912" alt="image" src="https://github.com/user-attachments/assets/3c62dcb4-956d-43b3-aa14-923c9bf732b4" />
