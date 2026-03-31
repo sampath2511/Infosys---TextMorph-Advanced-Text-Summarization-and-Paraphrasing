@@ -1,21 +1,33 @@
-🚀 TextMorph – Advanced Text Summarization & Paraphrasing Platform
+# 🚀 TextMorph – Advanced Text Summarization & Paraphrasing Platform
 
-📌 Overview
+>TextMorph is an AI-powered platform designed to simplify text through summarization, paraphrasing, and multilingual analysis with intelligent insights.
+
+---
+
+## 📌 Overview
 TextMorph is a secure, scalable, and intelligent Natural Language Processing (NLP)-based web application developed to simplify complex textual information through advanced AI techniques. The system provides functionalities such as text summarization, paraphrasing, readability analysis, and multilingual support, all integrated into a single interactive platform.
 
 The application is designed to assist students, researchers, and professionals in improving reading comprehension, reducing time spent on lengthy documents, and enhancing writing quality. It combines transformer-based deep learning models with secure backend systems to deliver accurate and efficient results.
 
 The platform also incorporates user authentication, feedback systems, activity tracking, and an admin dashboard to ensure a complete end-to-end solution.
 
-🎯 Objectives
+
+
+---
+
+## 🎯 Objectives
 To develop an AI-powered system capable of generating accurate summaries and paraphrased content
 To provide readability analysis for evaluating text complexity
 To design a secure authentication system for user data protection
 To maintain user interaction history for future reference
 To implement an admin dashboard for monitoring and analytics
 To ensure scalability, usability, and deployment readiness
-✨ System Features
-🔐 Authentication & Security System
+
+---
+
+## ✨ System Features
+
+### 🔐 Authentication & Security System
 The system includes a robust authentication and security mechanism to ensure safe user interaction and data protection.
 
 Users can register and log in using email and password
@@ -26,7 +38,8 @@ Password strength is enforced using regex validation (minimum length, special ch
 Login attempts are tracked, and rate limiting is applied to prevent brute-force attacks
 Password reuse prevention is implemented using password history tracking
 User accounts can be locked or unlocked by the admin
-👤 User Dashboard
+
+### 👤 User Dashboard
 The user dashboard provides an interactive interface for accessing all NLP functionalities.
 
 Users can input text manually or upload files in .txt and .pdf formats
@@ -35,7 +48,8 @@ Users can access summarization, paraphrasing, and readability tools from a singl
 Generated outputs are displayed clearly with proper formatting
 Users can view their past activity history
 Users can submit feedback and ratings for generated results
-📊 Readability Analysis Module
+
+### 📊 Readability Analysis Module
 This module evaluates the complexity and readability of the given text using standard linguistic metrics.
 
 Calculates multiple readability scores including:
@@ -49,7 +63,8 @@ Word complexity
 Syllable count
 Helps users understand how easy or difficult the text is to read
 Visualizes results using charts and indicators for better interpretation
-🤖 Text Summarization Engine
+
+### 🤖 Text Summarization Engine
 The summarization module uses transformer-based deep learning models to generate concise summaries.
 
 Models used:
@@ -62,7 +77,9 @@ Medium
 Long
 Designed to handle long articles, academic content, and reports
 Maintains contextual meaning while reducing content length
-✍️ Paraphrasing Engine
+
+
+### ✍️ Paraphrasing Engine
 The paraphrasing module rewrites text while preserving its original meaning.
 
 Supports both sentence-level and paragraph-level paraphrasing
@@ -70,14 +87,17 @@ Enhances vocabulary and sentence structure
 Displays original and generated text side-by-side for comparison
 Ensures semantic consistency
 Allows users to rate the output using a feedback system
-🌍 Multilingual Support
+
+### 🌐 Multilingual Support
 The application supports multilingual text processing through integrated translation capabilities.
 
 Uses NLLB (No Language Left Behind) translation support
 Enables processing of text in multiple languages
 Supports languages such as English, Hindi, Tamil, and others
 Enhances accessibility for a wider range of users
-🧠 Dataset Integration & Processing
+
+
+### 🗂 Dataset Integration & Processing
 The system leverages publicly available NLP datasets to improve model performance.
 
 CNN/DailyMail dataset for summarization tasks
@@ -85,7 +105,8 @@ XSum dataset for abstractive summarization
 PAWS dataset for paraphrasing and sentence similarity
 These datasets help improve model understanding and output quality
 Supports dataset-based preprocessing and evaluation
-📝 Feedback System
+
+### 💬 Feedback System
 A structured feedback system is implemented to evaluate model performance.
 
 Users can provide ratings and comments on generated outputs
@@ -95,7 +116,9 @@ Rating
 Comments
 Timestamp
 Helps in analyzing system performance and user satisfaction
-📜 Activity History Management
+
+
+### 📜 Activity History Management
 The system maintains a detailed record of user activities.
 
 Tracks actions such as:
@@ -107,7 +130,10 @@ Model used
 Timestamp
 Activity details
 Enables users to revisit and reuse previous results
-👑 Admin Dashboard
+
+
+## 👨‍💼 Admin Dashboard
+
 👥 User Management
 View all registered users
 Promote users to admin role
@@ -116,9 +142,9 @@ Delete users from the system
 📊 Analytics & Insights
 Monitor system usage statistics
 Analyze:
-Feature usage
-Model usage
-Language usage
+      Feature usage
+      Model usage
+      Language usage
 Data is displayed using interactive charts
 📡 Activity Monitoring
 View all user activities across the platform
@@ -129,15 +155,11 @@ Analyze collected feedback data
 Generate WordCloud visualization for user comments
 📤 Data Export
 Export data including:
-User information
-Usage logs
-Feedback records
-🎨 UI/UX Design
-Clean and modern user interface
-Structured layout for better navigation
-Interactive components for improved user experience
-Designed to be responsive and user-friendly
-🏗️ System Architecture
+              User information
+              Usage logs
+              Feedback records
+### 👥 User Management
+- 
 The system follows a layered architecture:
 
 User → Frontend (Streamlit) → Backend (API Layer) → AI Model Layer → Database
@@ -146,7 +168,43 @@ Frontend handles user interaction and display
 Backend manages API requests, authentication, and logic
 AI layer processes NLP tasks
 Database stores all persistent data
-🗄️ Database Design
+
+### 📈 Analytics & Insights
+- Usage statistics
+
+### 📡 Activity Monitoring
+- Real-time tracking
+
+### 📊 Feedback Analysis
+- Sentiment analysis
+
+### 📤 Data Export
+- Export reports
+
+---
+
+## 🎨 UI/UX Design
+Clean and modern user interface
+Structured layout for better navigation
+Interactive components for improved user experience
+Designed to be responsive and user-friendly
+
+
+---
+
+## 🏗 System Architecture
+
+The system follows a layered architecture:
+
+User → Frontend (Streamlit) → Backend (API Layer) → AI Model Layer → Database
+
+Frontend handles user interaction and display
+Backend manages API requests, authentication, and logic
+AI layer processes NLP tasks
+Database stores all persistent data
+---
+
+## 🗄 Database Design
 The application uses SQLite for data storage.
 
 Tables:
@@ -165,7 +223,11 @@ Tracking user activities
 Managing feedback
 Logging system events
 Monitoring usage patterns
-🛠️ Tech Stack
+
+
+
+
+## 🛠 Tech Stack
 Layer	Technologies
 Frontend	Streamlit
 Backend	Python
@@ -175,45 +237,49 @@ Libraries	Transformers, NLTK, Datasets
 Database	SQLite
 Visualization	Plotly, WordCloud
 Deployment	ngrok
-⚙️ Installation & Setup
-Clone Repository
-git clone <your-repo-link>
-cd TextMorph
-Install Dependencies
-pip install -r requirements.txt
-Run Application
-streamlit run app.py
-🌍 Deployment
+
+
+---
+
+## Deployment
+
 Deployed as a Streamlit web application
 Public access enabled using ngrok
 Google Drive integration for database persistence (optional)
-🔑 Environment Variables
+
+##🔑 Environment Variables
 EMAIL_USER
 EMAIL_PASSWORD
 NGROK_AUTHTOKEN
 HF_TOKEN (optional)
-🔒 Security Features
+
+## 🔒 Security Features
+
+### Clone Repository
 Password hashing (bcrypt)
 JWT authentication
 OTP verification
 Input validation
 Rate limiting
 Secure session handling
-📈 Logging & Monitoring
+
+## 📈 Logging & Monitoring
+
 Tracks feature usage
 Monitors active users
 Logs system events
 Maintains usage analytics
-🔮 Future Scope
+
+## 🔮 Future Scope
 Docker containerization
 Cloud deployment
 Advanced role-based access
 Real-time dashboards
 Integration with advanced LLM APIs
-🧾 Conclusion
-TextMorph is a comprehensive NLP-based platform that integrates AI-driven text processing with secure system design. The application successfully combines summarization, paraphrasing, readability analysis, and multilingual support into a unified system. With the inclusion of admin analytics, user tracking, and feedback mechanisms, the system demonstrates practical implementation of full-stack development and modern NLP techniques, making it suitable for real-world applications and future scalability.
 
-📸 Screenshots
+## Conclusion
+TextMorph is a comprehensive NLP-based platform that integrates AI-driven text processing with secure system design. The application successfully combines summarization, paraphrasing, readability analysis, and multilingual support into a unified system. With the inclusion of admin analytics, user tracking, and feedback mechanisms, the system demonstrates practical implementation of full-stack development and modern NLP techniques, making it suitable for real-world applications and future scalability.
+## 📸 Screenshots
 Login Page
 <img width="1919" height="914" alt="image" src="https://github.com/user-attachments/assets/0b4eb83f-9011-4535-9d03-572229992eea" />
 
@@ -237,4 +303,4 @@ User Dashboard
 
 f7
 Admin Dashboard
-<img width="1914" height="912" alt="image" src="https://github.com/user-attachments/assets/3c62dcb4-956d-43b3-aa14-923c9bf732b4" />
+<img width="1914" height="912" alt="image" src="https://github.com/user-attachments/assets/3c62dcb4-956d-43b3-aa14-923c9bf732b4" 
