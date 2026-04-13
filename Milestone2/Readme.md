@@ -104,3 +104,14 @@ Users can analyze text through:
 - NLP readability metric computation  
 - Interactive visualization design  
 - UI refinement and usability optimization  
+
+---
+## ScreenShots
+---
+OTP Email verification
+<img width="1911" height="907" alt="image" src="https://github.com/user-attachments/assets/75431a8c-3859-4c65-bfc7-6b4786dfb685" />
+Readability metrics visualization
+<img width="1910" height="910" alt="image" src="https://github.com/user-attachments/assets/7726c6f1-5172-4420-b3b5-5df22fc9942f" />
+<img width="1918" height="910" alt="image" src="https://github.com/user-attachments/assets/8056c7a1-81ff-456f-9a0f-17839ea0a6d5" />
+
+
