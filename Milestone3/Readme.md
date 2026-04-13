@@ -131,3 +131,24 @@ The project can be enhanced by adding:
 Milestone 3 successfully integrates AI-based text summarization and paraphrasing into the TextMorph system. These features allow users to efficiently analyze and rewrite large text while maintaining context and meaning.  
 
 Combined with the secure authentication system from previous milestones, this completes the core functionality of the project and demonstrates a real-world application of AI and NLP.  
+## ScreenShots
+
+----
+OTP Verification
+<img width="1600" height="720" alt="image" src="https://github.com/user-attachments/assets/05350eb4-c8b3-4d71-a2b5-4a9e82e5d69a" />
+Readability Dashboard
+<img width="1600" height="760" alt="image" src="https://github.com/user-attachments/assets/ee2bf3d1-9c2e-4101-afd0-85dadca34902" />
+<img width="1600" height="752" alt="image" src="https://github.com/user-attachments/assets/9ae8cd68-923f-4d4b-ba45-e2262bdb8497" />
+Text Summarization Module
+<img width="1600" height="764" alt="image" src="https://github.com/user-attachments/assets/254300ba-8cd5-4345-a651-570454240e44" />
+Paraphrasing Module
+<img width="1600" height="764" alt="image" src="https://github.com/user-attachments/assets/813392cd-6b74-4d40-b6f6-200ffe03fb9c" />
+Dataset Augmentation Module
+<img width="1600" height="764" alt="image" src="https://github.com/user-attachments/assets/986fd8bd-cfb6-4d0b-b1d0-204ee591d9fc" />
+<img width="1600" height="764" alt="image" src="https://github.com/user-attachments/assets/63925c86-3466-42ea-813c-1f1cc1a20593" />
+
+
+
+
+
+
