@@ -223,7 +223,17 @@ The application will open in your browser.
 ---
 
 ## 📸 Screenshots  
-(Add your application screenshots here)  
+<img width="2000" height="2826" alt="image" src="https://github.com/user-attachments/assets/9e127e80-8497-4d33-9af9-a84cf216a47b" />
+
+<img width="2000" height="2826" alt="image" src="https://github.com/user-attachments/assets/63eb8b8b-71d4-48a6-b2ed-dee0f0e3ca8b" />
+
+<img width="2000" height="2826" alt="image" src="https://github.com/user-attachments/assets/3237c2a6-03d1-4f62-811a-ffb4d1a34d45" />
+
+<img width="2000" height="2826" alt="image" src="https://github.com/user-attachments/assets/d4492496-6783-463f-9033-49871992e354" />
+
+
+<img width="2000" height="2826" alt="image" src="https://github.com/user-attachments/assets/b806358b-7ac8-44e5-a0c9-55fb0eb184da" />
+
 
 ---
 
